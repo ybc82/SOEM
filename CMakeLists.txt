@@ -23,7 +23,7 @@ if(WIN32)
   set(OS_LIBS wpcap.lib Packet.lib Ws2_32.lib Winmm.lib)
 elseif(UNIX)
   set(OS "linux")
-  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wextra -Werror")
+  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wextra") # Werror
   set(OS_LIBS pthread rt)
 elseif(${CMAKE_SYSTEM_NAME} MATCHES "rt-kernel")
   set(OS "rtk")
@@ -77,3 +77,4 @@ install(FILES
 add_subdirectory(test/linux/slaveinfo)
 add_subdirectory(test/linux/eepromtool)
 add_subdirectory(test/linux/simple_test)
+add_subdirectory(test/linux/Simple_Test_Torque)
