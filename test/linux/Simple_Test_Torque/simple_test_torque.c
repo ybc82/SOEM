@@ -21,6 +21,8 @@
 #include "ethercatconfig.h"
 #include "ethercatprint.h"
 
+#include "control.h"
+
 #define EC_TIMEOUTMON 500
 
 #define INITIAL_POS 0
@@ -32,17 +34,6 @@ boolean needlf;
 volatile int wkc;
 boolean inOP;
 uint8 currentgroup = 0;
-
-struct TorqueOut {
-    uint16 torque;
-    uint16 status;
-};
-struct TorqueIn {
-    int32 position;
-    int16 torque;
-    uint16 status;
-    int8 profile;
-};
 
 /**
  * helper macros
@@ -69,21 +60,6 @@ struct TorqueIn {
     printf("EC> \"%s\" %x - %x [%s] \n", (char*)ec_elist2string(), ec_slave[1].state, ec_slave[1].ALstatuscode, (char*)ec_ALstatuscode2string(ec_slave[1].ALstatuscode));    \
 }
 
-/*
-    The controller, called every cycle
-    Input:
-        - TorqueIn* t_in: feedback, position, torque, status, profile
-    Output:
-        - TorqueOut* t_out: torque, status
-*/
-void    control_loop(const struct TorqueIn* t_in, struct TorqueOut* t_out)
-{
-    static int i = 0;
-    int16 torque = t_in->torque;
-    i ++;
-    t_out->torque = (int16) (sin(i/100.)*(300));
-}
-
 void simpletest(char *ifname)
 {
     int i, oloop, iloop, chk;
@@ -97,6 +73,7 @@ void simpletest(char *ifname)
     struct TorqueIn *val;
     struct TorqueOut *target;
 
+    struct Controller controller;
    printf("Starting simple test\n");
 
    /* initialise SOEM, bind socket to ifname */
@@ -292,7 +269,7 @@ void simpletest(char *ifname)
                         }
 
                         if((val->status & 0x0fff) == 0x0237 && reachedInitial){
-                            control_loop(val, target);
+                            controller_loop(&controller, val, target);
                         }
 
                         printf("  Target: 0x%x, control: 0x%x", target->torque, target->status);
