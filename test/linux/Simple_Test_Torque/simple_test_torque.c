@@ -352,7 +352,7 @@ void simpletest(char *ifname)
             printf("\nRequest init state for all slaves\n");
             for (i = 1; i <= ec_slavecount; i++)
             {
-              WRITE(0x10F1, 2, buf32, 0, "Heartbeat");
+              WRITE_i(i, 0x10F1, 2, buf32, 0, "Heartbeat");
             }
             ec_slave[0].state = EC_STATE_INIT;
             /* request INIT state for all slaves */
