@@ -324,6 +324,7 @@ void simpletest(char *ifname)
                           }
 
                           printf("  Target: 0x%x, control: 0x%x", target[slave]->torque, target[slave]->status);
+                          printf(" \n slave %d: \n", slave)
                         }
                       }
                         printf("\r");
