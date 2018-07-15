@@ -312,7 +312,7 @@ void simpletest(char *ifname)
   //                            break;
                           }
 
-                        for (slave = 1; slave < ec_slavecount; slave ++)
+                        for (slave = 1; slave <= ec_slavecount; slave ++)
                         {
                           /** we wait to be in ready-to-run mode and with initial value reached */
                           if(reachedInitial[slave] == 0 /*&& val->position == INITIAL_POS */&& (val[slave]->status & 0x0fff) == 0x0237){
@@ -323,7 +323,7 @@ void simpletest(char *ifname)
                               controller_loop(&controller, val, target);
                           }
 
-                          printf("  Target: 0x%x, control: 0x%x, slave %d", target[slave]->torque, target[slave]->status, slave);
+                          printf("  Target: 0x%x, control: 0x%x, slave %d\n", target[slave]->torque, target[slave]->status, slave);
                         }
                       }
                         printf("\r");
