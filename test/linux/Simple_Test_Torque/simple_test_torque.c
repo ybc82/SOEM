@@ -46,6 +46,14 @@ uint8 currentgroup = 0;
         printf("Read at 0x%04x:%d => wkc: %d; data: 0x%.*x (%d)\t[%s]\n", idx, sub, __ret, __s, (unsigned int)buf, (unsigned int)buf, comment);    \
      }
 
+#define READ_i(slave, idx, sub, buf, comment)    \
+    {   \
+        buf=0;  \
+        int __s = sizeof(buf);    \
+        int __ret = ec_SDOread(slave, idx, sub, FALSE, &__s, &buf, EC_TIMEOUTRXM);   \
+        printf("Read from slave %d at 0x%04x:%d => wkc: %d; data: 0x%.*x (%d)\t[%s]\n", slave, idx, sub, __ret, __s, (unsigned int)buf, (unsigned int)buf, comment);    \
+     }
+
 #define WRITE(idx, sub, buf, value, comment) \
     {   \
         int __s = sizeof(buf);  \
@@ -54,15 +62,29 @@ uint8 currentgroup = 0;
         printf("Write at 0x%04x:%d => wkc: %d; data: 0x%.*x\t{%s}\n", idx, sub, __ret, __s, (unsigned int)buf, comment);    \
     }
 
+#define WRITE_i(slave, idx, sub, buf, value, comment) \
+    {   \
+        int __s = sizeof(buf);  \
+        buf = value;    \
+        int __ret = ec_SDOwrite(slave, idx, sub, FALSE, __s, &buf, EC_TIMEOUTRXM);  \
+        printf("Write from slave %d at 0x%04x:%d => wkc: %d; data: 0x%.*x\t{%s}\n", slave, idx, sub, __ret, __s, (unsigned int)buf, comment);    \
+    }
+
 #define CHECKERROR()   \
 {   \
     ec_readstate();\
     printf("EC> \"%s\" %x - %x [%s] \n", (char*)ec_elist2string(), ec_slave[1].state, ec_slave[1].ALstatuscode, (char*)ec_ALstatuscode2string(ec_slave[1].ALstatuscode));    \
 }
 
+#define CHECKERROR_i(i)   \
+{   \
+    ec_readstate();\
+    printf("EC> \"%s\" %x - %x [%s] \n", (char*)ec_elist2string(), ec_slave[i].state, ec_slave[i].ALstatuscode, (char*)ec_ALstatuscode2string(ec_slave[i].ALstatuscode));    \
+}
+
 void simpletest(char *ifname)
 {
-    int i, oloop, iloop, chk;
+    int i, oloop, iloop, chk, slave;
     needlf = FALSE;
     inOP = FALSE;
 
@@ -70,8 +92,8 @@ void simpletest(char *ifname)
     uint16 buf16;
     uint8 buf8;
 
-    struct TorqueIn *val;
-    struct TorqueOut *target;
+    struct TorqueIn *val[ec_slavecount+1];
+    struct TorqueOut *target[ec_slavecount+1];
 
     struct Controller controller;
    printf("Starting simple test\n");
@@ -87,43 +109,54 @@ void simpletest(char *ifname)
       {
          printf("%d slaves found and configured.\n",ec_slavecount);
 
-         printf("Has CA? %s\n", ec_slave[1].CoEdetails & ECT_COEDET_SDOCA ? "true":"false" );
+         printf("Has CA? \n");
+         for (i = 1; i <= ec_slavecount; i++)
+           printf("%s", ec_slave[i].CoEdetails & ECT_COEDET_SDOCA ? "true ":"false " );
+         printf("\n");
 
          /** CompleteAccess disabled for Elmo driver */
-         ec_slave[1].CoEdetails ^= ECT_COEDET_SDOCA;
+         for (i = 1; i <= ec_slavecount; i++)
+          ec_slave[1].CoEdetails ^= ECT_COEDET_SDOCA;
 
          ec_statecheck(0, EC_STATE_PRE_OP,  EC_TIMEOUTSTATE);
 
          /** set PDO mapping */
          /** opMode: 8  => Position profile */
-         WRITE(0x6060, 0, buf8, 10, "OpMode");
-         READ(0x6061, 0, buf8, "OpMode display");
+         for (i = 1; i <= ec_slavecount; i++)
+         {
+           WRITE_i(i, 0x6060, 0, buf8, 10, "OpMode");
+           READ_i(i, 0x6061, 0, buf8, "OpMode display");
 
 
-         READ(0x1c12, 0, buf32, "rxPDO:0");
-         READ(0x1c13, 0, buf32, "txPDO:0");
+           READ_i(i, 0x1c12, 0, buf32, "rxPDO:0");
+           READ_i(i, 0x1c13, 0, buf32, "txPDO:0");
 
-         READ(0x1c12, 1, buf32, "rxPDO:1");
-         READ(0x1c13, 1, buf32, "txPDO:1");
+           READ_i(i, 0x1c12, 1, buf32, "rxPDO:1");
+           READ_i(i, 0x1c13, 1, buf32, "txPDO:1");
 
 //         WRITE(0x1c12, 1, buf16, 0x1601, "rxPDO");
 //         WRITE(0x1c13, 1, buf16, 0x1A01, "txPDO");
+         }
 
         int32 ob2;int os;
-         os=sizeof(ob2); ob2 = 0x16020001;
-         ec_SDOwrite(1,0x1c12,0,TRUE,os,&ob2,EC_TIMEOUTRXM);
-         os=sizeof(ob2); ob2 = 0x1a020001;
-         ec_SDOwrite(1,0x1c13,0, TRUE, os,&ob2,EC_TIMEOUTRXM);
+        for (i = 1; i <= ec_slavecount; i++)
+        {
+           os=sizeof(ob2); ob2 = 0x16020001;
+           ec_SDOwrite(i,0x1c12,0,TRUE,os,&ob2,EC_TIMEOUTRXM);
+           os=sizeof(ob2); ob2 = 0x1a020001;
+           ec_SDOwrite(i,0x1c13,0, TRUE, os,&ob2,EC_TIMEOUTRXM);
+        }
 
 //         WRITE(0x1c12, 0, buf32, 0x16010001, "rxPDO");
 //         WRITE(0x1c13, 0, buf32, 0x1A010001, "txPDO");
+        for (i = 1; i <= ec_slavecount; i++)
+        {
+         READ_i(i, 0x1c12, 0, buf32, "rxPDO:0");
+         READ_i(i, 0x1c13, 0, buf32, "txPDO:0");
 
-         READ(0x1c12, 0, buf32, "rxPDO:0");
-         READ(0x1c13, 0, buf32, "txPDO:0");
-
-         READ(0x1c12, 1, buf32, "rxPDO:1");
-         READ(0x1c13, 1, buf32, "txPDO:1");
-
+         READ_i(i, 0x1c12, 1, buf32, "rxPDO:1");
+         READ_i(i, 0x1c13, 1, buf32, "txPDO:1");
+       }
 
          /** if CA disable => automapping works */
          ec_config_map(&IOmap);
@@ -131,19 +164,23 @@ void simpletest(char *ifname)
          /** let DC off for the time being */
 //         ec_configdc();
 
-
+        for (i = 1; i <= ec_slavecount; i++)
+        {
          printf("\nSlave:%d\n Name:%s\n Output size: %dbits\n Input size: %dbits\n State: %d\n Delay: %d[ns]\n Has DC: %d\n",
-               1, ec_slave[1].name, ec_slave[1].Obits, ec_slave[1].Ibits,
-               ec_slave[1].state, ec_slave[1].pdelay, ec_slave[1].hasdc);
-
+               i, ec_slave[i].name, ec_slave[i].Obits, ec_slave[i].Ibits,
+               ec_slave[i].state, ec_slave[i].pdelay, ec_slave[i].hasdc);
+        }
 
          /** disable heartbeat alarm */
-         READ(0x10F1, 2, buf32, "Heartbeat?");
-         WRITE(0x10F1, 2, buf32, 1, "Heartbeat");
+        for (i = 1; i <= ec_slavecount; i++)
+        {     
+         READ_i(i, 0x10F1, 2, buf32, "Heartbeat?");
+         WRITE_i(i, 0x10F1, 2, buf32, 1, "Heartbeat");
 
 
-         WRITE(0x60c2, 1, buf8, 2, "Time period");
-         WRITE(0x2f75, 0, buf16, 2, "Interpolation timeout");
+         WRITE_i(i, 0x60c2, 1, buf8, 2, "Time period");
+         WRITE_i(i, 0x2f75, 0, buf16, 2, "Interpolation timeout");
+        }
 
          printf("Slaves mapped, state to SAFE_OP.\n");
 
@@ -172,11 +209,12 @@ void simpletest(char *ifname)
          ec_send_processdata();
          ec_receive_processdata(EC_TIMEOUTRET);
 
-
-         READ(0x6083, 0, buf32, "Profile acceleration");
-         READ(0x6084, 0, buf32, "Profile deceleration");
-         READ(0x6085, 0, buf32, "Quick stop deceleration");
-
+         for (i = 1; i <= ec_slavecount; i++)
+         {
+           READ_i(i, 0x6083, 0, buf32, "Profile acceleration");
+           READ_i(i, 0x6084, 0, buf32, "Profile deceleration");
+           READ_i(i, 0x6085, 0, buf32, "Quick stop deceleration");
+         }
          /* request OP state for all slaves */
          ec_writestate(0);
          chk = 40;
@@ -204,29 +242,37 @@ void simpletest(char *ifname)
             }
 
 
-            WRITE(0x6040, 0, buf16, 0, "*control word*"); usleep(100000);
-            READ(0x6041, 0, buf16, "*status word*");
+            for (i = 1; i < ec_slavecount; i++)
+            {
+              WRITE_i(i, 0x6040, 0, buf16, 0, "*control word*"); usleep(100000);
+              READ_i(i, 0x6041, 0, buf16, "*status word*");
 
-            WRITE(0x6040, 0, buf16, 6, "*control word*"); usleep(100000);
-            READ(0x6041, 0, buf16, "*status word*");
+              WRITE_i(i, 0x6040, 0, buf16, 6, "*control word*"); usleep(100000);
+              READ_i(i, 0x6041, 0, buf16, "*status word*");
 
-            WRITE(0x6040, 0, buf16, 7, "*control word*"); usleep(100000);
-            READ(0x6041, 0, buf16, "*status word*");
+              WRITE_i(i, 0x6040, 0, buf16, 7, "*control word*"); usleep(100000);
+              READ_i(i, 0x6041, 0, buf16, "*status word*");
 
-            WRITE(0x6040, 0, buf16, 15, "*control word*"); usleep(100000);
-            READ(0x6041, 0, buf16, "*status word*");
+              WRITE_i(i, 0x6040, 0, buf16, 15, "*control word*"); usleep(100000);
+              READ_i(i, 0x6041, 0, buf16, "*status word*");
 
-   CHECKERROR();
-            READ(0x1a0b, 0, buf8, "OpMode Display");
+              CHECKERROR_i(i);
+              READ_i(i, 0x1a0b, 0, buf8, "OpMode Display");
+            }
 
+            int reachedInitial[ec_slavecount+1];
+            for (i = 0; i <= ec_slavecount; i++)
+              reachedInitial[i] = 0;
 
-            int reachedInitial = 0;
+            for (i = 1; i <= ec_slavecount; i++)
+            {
 
-            READ(0x1001, 0, buf8, "Error");
+              READ_i(i, 0x1001, 0, buf8, "Error");
 
-            /* cyclic loop */
-            target = (struct TorqueOut *)(ec_slave[1].outputs);
-            val = (struct TorqueIn *)(ec_slave[1].inputs);
+              /* cyclic loop */
+              target[i] = (struct TorqueOut *)(ec_slave[i].outputs);
+              val[i] = (struct TorqueIn *)(ec_slave[i].inputs);
+            }
 
 
             for(i = 1; i <= 100000; i++)
@@ -238,42 +284,46 @@ void simpletest(char *ifname)
                     if(wkc >= expectedWKC)
                     {
                         printf("Processdata cycle %4d, WKC %d,", i, wkc);
-                        printf("  pos: 0x%x, tor: 0x%x, stat: 0x%x, mode: 0x%x", val->position, val->torque, val->status, val->profile);
+                        for (slave = 1; slave < ec_slavecount; slave ++)
+                        {
+                          printf("  pos: 0x%x, tor: 0x%x, stat: 0x%x, mode: 0x%x", val[slave]->position, val[slave]->torque, val[slave]->status, val[slave]->profile);
 
-                        /** if in fault or in the way to normal status, we update the state machine */
-                        switch(target->status){
-                        case 0:
-                            target->status = 6;
-                            break;
-                        case 6:
-                            target->status = 7;
-                            break;
-                        case 7:
-                            target->status = 15;
-                            break;
-                        case 128:
-                            target->status = 0;
-                            break;
-                        default:
-                            if(val->status >> 3 & 0x01){
-                                READ(0x1001, 0, buf8, "Error");
-                                target->status = 128;
-                            }
-//                            break;
+                          /** if in fault or in the way to normal status, we update the state machine */
+                          switch(target[slave]->status){
+                          case 0:
+                              target[slave]->status = 6;
+                              break;
+                          case 6:
+                              target[slave]->status = 7;
+                              break;
+                          case 7:
+                              target[slave]->status = 15;
+                              break;
+                          case 128:
+                              target[slave]->status = 0;
+                              break;
+                          default:
+                              if(val[slave]->status >> 3 & 0x01){
+                                  READ_i(slave, 0x1001, 0, buf8, "Error");
+                                  target[slave]->status = 128;
+                              }
+  //                            break;
+                          }
+
+                        for (slave = 1; slave < ec_slavecount; slave ++)
+                        {
+                          /** we wait to be in ready-to-run mode and with initial value reached */
+                          if(reachedInitial[slave] == 0 /*&& val->position == INITIAL_POS */&& (val[slave]->status & 0x0fff) == 0x0237){
+                              reachedInitial[slave] = 1;
+                          }
+
+                          if((val[slave]->status & 0x0fff) == 0x0237 && reachedInitial[slave]){
+                              controller_loop(&controller, val, target);
+                          }
+
+                          printf("  Target: 0x%x, control: 0x%x", target[slave]->torque, target[slave]->status);
                         }
-
-
-                        /** we wait to be in ready-to-run mode and with initial value reached */
-                        if(reachedInitial == 0 /*&& val->position == INITIAL_POS */&& (val->status & 0x0fff) == 0x0237){
-                            reachedInitial = 1;
-                        }
-
-                        if((val->status & 0x0fff) == 0x0237 && reachedInitial){
-                            controller_loop(&controller, val, target);
-                        }
-
-                        printf("  Target: 0x%x, control: 0x%x", target->torque, target->status);
-
+                      }
                         printf("\r");
                         needlf = TRUE;
                     }
@@ -298,7 +348,10 @@ void simpletest(char *ifname)
 
 
             printf("\nRequest init state for all slaves\n");
-            WRITE(0x10F1, 2, buf32, 0, "Heartbeat");
+            for (i = 1; i <= ec_slavecount; i++)
+            {
+              WRITE(0x10F1, 2, buf32, 0, "Heartbeat");
+            }
             ec_slave[0].state = EC_STATE_INIT;
             /* request INIT state for all slaves */
             ec_writestate(0);

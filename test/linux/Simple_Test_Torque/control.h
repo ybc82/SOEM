@@ -27,6 +27,6 @@ void controller_init();
 // }
 
 // Control loop
-void controller_loop(const struct Controller* controller, const struct TorqueIn* t_in, struct TorqueOut* t_out);
+void controller_loop(const struct Controller* controller, struct TorqueIn** t_in, struct TorqueOut** t_out);
 
 #endif // CONTROL_H__
