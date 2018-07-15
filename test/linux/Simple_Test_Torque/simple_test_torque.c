@@ -237,15 +237,14 @@ void simpletest(char *ifname)
              * Drive state machine transistions
              *   0 -> 6 -> 7 -> 15
              */
-            READ(0x6041, 0, buf16, "*status word*");
-            if(buf16 == 0x218){
-                WRITE(0x6040, 0, buf16, 128, "*control word*"); usleep(100000);
-                READ(0x6041, 0, buf16, "*status word*");
-            }
-
-
-            for (i = 1; i < ec_slavecount; i++)
+            for (i = 1; i <= ec_slavecount; i++)
             {
+              READ_i(i, 0x6041, 0, buf16, "*status word*");
+              if(buf16 == 0x218){
+                  WRITE_i(i, 0x6040, 0, buf16, 128, "*control word*"); usleep(100000);
+                  READ_i(i, 0x6041, 0, buf16, "*status word*");
+              }
+
               WRITE_i(i, 0x6040, 0, buf16, 0, "*control word*"); usleep(100000);
               READ_i(i, 0x6041, 0, buf16, "*status word*");
 
