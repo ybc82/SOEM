@@ -12,6 +12,6 @@ void    controller_loop(const struct Controller* controller, struct TorqueIn** t
     static int i = 0;
     int16 torque = t_in[1]->torque;
     i ++;
-    t_out[1]->torque = (int16) (sin(i/100.)*(550));
-    t_out[2]->torque = (int16) (sin(i/200.)*(550));
+    t_out[1]->torque = (int16) (sin(i/100.)*(250));
+    t_out[2]->torque = (int16) (sin(i/200.)*(400));
 }
