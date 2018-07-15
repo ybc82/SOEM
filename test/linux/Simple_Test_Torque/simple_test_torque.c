@@ -233,6 +233,10 @@ void simpletest(char *ifname)
             printf("Operational state reached for all slaves.\n");
             inOP = TRUE;
 
+            int reachedInitial[ec_slavecount+1];
+            for (i = 0; i <= ec_slavecount; i++)
+              reachedInitial[i] = 0;
+
             /**
              * Drive state machine transistions
              *   0 -> 6 -> 7 -> 15
@@ -260,10 +264,6 @@ void simpletest(char *ifname)
               CHECKERROR_i(i);
               READ_i(i, 0x1a0b, 0, buf8, "OpMode Display");
             }
-
-            int reachedInitial[ec_slavecount+1];
-            for (i = 0; i <= ec_slavecount; i++)
-              reachedInitial[i] = 0;
 
             for (i = 1; i <= ec_slavecount; i++)
             {
