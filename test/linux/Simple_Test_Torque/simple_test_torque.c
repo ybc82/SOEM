@@ -233,7 +233,7 @@ void simpletest(char *ifname)
             printf("Operational state reached for all slaves.\n");
             inOP = TRUE;
 
-            int reachedInitial[ec_slavecount+1];
+            int reachedInitial[MAX_EC_SLAVECOUNT+1];
             for (i = 0; i <= ec_slavecount; i++)
               reachedInitial[i] = 0;
 
