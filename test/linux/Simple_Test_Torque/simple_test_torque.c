@@ -323,8 +323,7 @@ void simpletest(char *ifname)
                               controller_loop(&controller, val, target);
                           }
 
-                          printf("  Target: 0x%x, control: 0x%x", target[slave]->torque, target[slave]->status);
-                          printf(" \n slave %d: \n", slave);
+                          printf("  Target: 0x%x, control: 0x%x, slave %d", target[slave]->torque, target[slave]->status, slave);
                         }
                       }
                         printf("\r");
