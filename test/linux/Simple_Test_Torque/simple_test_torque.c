@@ -67,7 +67,7 @@ uint8 currentgroup = 0;
         int __s = sizeof(buf);  \
         buf = value;    \
         int __ret = ec_SDOwrite(slave, idx, sub, FALSE, __s, &buf, EC_TIMEOUTRXM);  \
-        printf("Write from slave %d at 0x%04x:%d => wkc: %d; data: 0x%.*x\t{%s}\n", slave, idx, sub, __ret, __s, (unsigned int)buf, comment);    \
+        printf("Write to slave %d at 0x%04x:%d => wkc: %d; data: 0x%.*x\t{%s}\n", slave, idx, sub, __ret, __s, (unsigned int)buf, comment);    \
     }
 
 #define CHECKERROR()   \
@@ -82,6 +82,8 @@ uint8 currentgroup = 0;
     printf("EC> \"%s\" %x - %x [%s] \n", (char*)ec_elist2string(), ec_slave[i].state, ec_slave[i].ALstatuscode, (char*)ec_ALstatuscode2string(ec_slave[i].ALstatuscode));    \
 }
 
+#define MAX_EC_SLAVECOUNT 3
+
 void simpletest(char *ifname)
 {
     int i, oloop, iloop, chk, slave;
@@ -92,8 +94,8 @@ void simpletest(char *ifname)
     uint16 buf16;
     uint8 buf8;
 
-    struct TorqueIn *val[ec_slavecount+1];
-    struct TorqueOut *target[ec_slavecount+1];
+    struct TorqueIn *val[MAX_EC_SLAVECOUNT+1];
+    struct TorqueOut *target[MAX_EC_SLAVECOUNT+1];
 
     struct Controller controller;
    printf("Starting simple test\n");
@@ -284,7 +286,7 @@ void simpletest(char *ifname)
                     if(wkc >= expectedWKC)
                     {
                         printf("Processdata cycle %4d, WKC %d,", i, wkc);
-                        for (slave = 1; slave < ec_slavecount; slave ++)
+                        for (slave = 1; slave <= ec_slavecount; slave ++)
                         {
                           printf("  pos: 0x%x, tor: 0x%x, stat: 0x%x, mode: 0x%x", val[slave]->position, val[slave]->torque, val[slave]->status, val[slave]->profile);
 
