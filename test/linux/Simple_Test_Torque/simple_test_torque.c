@@ -311,6 +311,7 @@ void simpletest(char *ifname)
                               }
   //                            break;
                           }
+                        }
 
                         for (slave = 1; slave <= ec_slavecount; slave ++)
                         {
@@ -325,7 +326,7 @@ void simpletest(char *ifname)
 
                           printf("  Target: 0x%x, control: 0x%x, slave %d\n", target[slave]->torque, target[slave]->status, slave);
                         }
-                      }
+                      
                         printf("\r");
                         needlf = TRUE;
                     }
