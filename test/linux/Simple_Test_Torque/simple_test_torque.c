@@ -94,6 +94,8 @@ void simpletest(char *ifname)
     uint16 buf16;
     uint8 buf8;
 
+    boolean bControlOn;
+
     struct TorqueIn *val[MAX_EC_SLAVECOUNT+1];
     struct TorqueOut *target[MAX_EC_SLAVECOUNT+1];
 
@@ -265,6 +267,7 @@ void simpletest(char *ifname)
               READ_i(i, 0x1a0b, 0, buf8, "OpMode Display");
             }
 
+            printf("slavecount: %d\n", ec_slavecount);
             for (i = 1; i <= ec_slavecount; i++)
             {
 
@@ -274,7 +277,9 @@ void simpletest(char *ifname)
               target[i] = (struct TorqueOut *)(ec_slave[i].outputs);
               val[i] = (struct TorqueIn *)(ec_slave[i].inputs);
             }
+            printf("test point\n");
 
+            controller_init(&controller, ec_slavecount, val);
 
             for(i = 1; i <= 100000; i++)
             {
@@ -287,8 +292,8 @@ void simpletest(char *ifname)
                         printf("Processdata cycle %4d, WKC %d,", i, wkc);
                         for (slave = 1; slave <= ec_slavecount; slave ++)
                         {
-                          printf("  pos: 0x%x, tor: 0x%x, stat: 0x%x, mode: 0x%x", val[slave]->position, val[slave]->torque, val[slave]->status, val[slave]->profile);
-
+                          // printf("  pos: 0x%x, tor: 0x%x, stat: 0x%x, mode: 0x%x", val[slave]->position, val[slave]->torque, val[slave]->status, val[slave]->profile);
+                          printf("  pos: %d, tor: %d", val[slave]->position, val[slave]->torque);
                           /** if in fault or in the way to normal status, we update the state machine */
                           switch(target[slave]->status){
                           case 0:
@@ -312,6 +317,7 @@ void simpletest(char *ifname)
                           }
                         }
 
+                        bControlOn = TRUE;
                         for (slave = 1; slave <= ec_slavecount; slave ++)
                         {
                           /** we wait to be in ready-to-run mode and with initial value reached */
@@ -320,11 +326,18 @@ void simpletest(char *ifname)
                           }
 
                           if((val[slave]->status & 0x0fff) == 0x0237 && reachedInitial[slave]){
-                              controller_loop(&controller, val, target);
+                            ; // nothing to do for now; will perform all control work outside for-loop
                           }
-
-                          printf("  Target: 0x%x, control: 0x%x, slave %d\n", target[slave]->torque, target[slave]->status, slave);
+                          else
+                          {
+                            bControlOn = FALSE;
+                          }
                         }
+                        if (bControlOn == TRUE)
+                        {
+                          controller_loop(&controller, val, target);
+                        }
+
                       
                         printf("\r");
                         needlf = TRUE;

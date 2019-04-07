@@ -5,7 +5,7 @@
 #include "ethercattype.h"
 
 struct TorqueOut {
-    uint16 torque;
+    int16 torque;
     uint16 status;
 };
 struct TorqueIn {
@@ -17,16 +17,14 @@ struct TorqueIn {
 
 struct Controller{
 	int16 id;
+	int16 n_actuators; 	// number of actuators
 	// empty for now
 };
 
 // Initialize, if necessary
-void controller_init();
-// {
-// 	// TODO
-// }
+void controller_init(struct Controller* controller, int n_actuators, struct TorqueIn** t_in);
 
 // Control loop
-void controller_loop(const struct Controller* controller, struct TorqueIn** t_in, struct TorqueOut** t_out);
+void controller_loop(struct Controller* controller, struct TorqueIn** t_in, struct TorqueOut** t_out);
 
 #endif // CONTROL_H__
