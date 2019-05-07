@@ -188,7 +188,7 @@ void simpletest(char *ifname)
 
          printf("Slaves mapped, state to SAFE_OP.\n");
 
-         int timestep = 700;
+         int timestep = 1;
 
          /* wait for all slaves to reach SAFE_OP state */
          ec_statecheck(0, EC_STATE_SAFE_OP,  EC_TIMEOUTSTATE * 4);
@@ -289,11 +289,12 @@ void simpletest(char *ifname)
 
                     if(wkc >= expectedWKC)
                     {
-                        printf("Processdata cycle %4d, WKC %d,", i, wkc);
+                        if (i%1000 == 0)
+                          printf("Processdata cycle %4d, WKC %d,", i, wkc);
                         for (slave = 1; slave <= ec_slavecount; slave ++)
                         {
                           // printf("  pos: 0x%x, tor: 0x%x, stat: 0x%x, mode: 0x%x", val[slave]->position, val[slave]->torque, val[slave]->status, val[slave]->profile);
-                          printf("  pos: %d, tor: %d", val[slave]->position, val[slave]->torque);
+                          //printf("  pos: %d, tor: %d", val[slave]->position, val[slave]->torque);
                           /** if in fault or in the way to normal status, we update the state machine */
                           switch(target[slave]->status){
                           case 0:
