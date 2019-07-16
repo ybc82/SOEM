@@ -188,7 +188,7 @@ void simpletest(char *ifname)
 
          printf("Slaves mapped, state to SAFE_OP.\n");
 
-         int timestep = 1;
+         int timestep = 100;
 
          /* wait for all slaves to reach SAFE_OP state */
          ec_statecheck(0, EC_STATE_SAFE_OP,  EC_TIMEOUTSTATE * 4);

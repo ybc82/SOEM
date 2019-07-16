@@ -53,7 +53,7 @@ void    controller_loop(struct Controller* controller, struct TorqueIn** t_in, s
             t_out[i]->torque = (int16)(torque_cmd);
         }
         // printf("compare: %d %f\n", t_out[i]->torque, Control_Y.Torque_Cmd[i-1]);
-        //printf("1- p:%f, r:%f, t:%f, 2- p:%f, r:%f, t:%f\n", Control_U.Position[0], Control_U.Position_Cmd[0], Control_Y.Torque_Cmd[0], Control_U.Position[1], Control_U.Position_Cmd[1], Control_Y.Torque_Cmd[1]);
+        printf("1- p:%f, r:%f, t:%f, 2- p:%f, r:%f, t:%f\n", Control_U.Position[0], Control_U.Position_Cmd[0], Control_Y.Torque_Cmd[0], Control_U.Position[1], Control_U.Position_Cmd[1], Control_Y.Torque_Cmd[1]);
    }
 
 }
