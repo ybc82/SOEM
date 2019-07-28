@@ -277,7 +277,6 @@ void simpletest(char *ifname)
               target[i] = (struct TorqueOut *)(ec_slave[i].outputs);
               val[i] = (struct TorqueIn *)(ec_slave[i].inputs);
             }
-            printf("test point\n");
 
             controller_init(&controller, ec_slavecount, val);
 

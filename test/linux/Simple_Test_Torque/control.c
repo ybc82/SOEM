@@ -22,14 +22,13 @@ void    controller_init(struct Controller* controller, int n_actuators, struct T
         controller->n_actuators = -1;
         // TODO: and halt controlling
     }
-    printf("test point 1\n");
     Control_initialize();
-    printf("test point 2\n");
+    printf("Simulink controller initialized.\n");
     for (i = 1; i <= controller->n_actuators; i++)
     {
         Control_U.Position_Cmd[i-1] = t_in[i]->position;
     }
-    printf("test point 3\n");
+    printf("Controller fully initialized.\n");
 }
 
 void    controller_loop(struct Controller* controller, struct TorqueIn** t_in, struct TorqueOut** t_out)
@@ -52,8 +51,10 @@ void    controller_loop(struct Controller* controller, struct TorqueIn** t_in, s
                 torque_cmd = -32767;
             t_out[i]->torque = (int16)(torque_cmd);
         }
+        // // For comparison only
         // printf("compare: %d %f\n", t_out[i]->torque, Control_Y.Torque_Cmd[i-1]);
-        printf("1- p:%f, r:%f, t:%f, 2- p:%f, r:%f, t:%f\n", Control_U.Position[0], Control_U.Position_Cmd[0], Control_Y.Torque_Cmd[0], Control_U.Position[1], Control_U.Position_Cmd[1], Control_Y.Torque_Cmd[1]);
+        // // For debug only
+        // printf("1- p:%f, r:%f, t:%f, 2- p:%f, r:%f, t:%f\n", Control_U.Position[0], Control_U.Position_Cmd[0], Control_Y.Torque_Cmd[0], Control_U.Position[1], Control_U.Position_Cmd[1], Control_Y.Torque_Cmd[1]);
    }
 
 }
