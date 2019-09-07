@@ -188,7 +188,7 @@ void simpletest(char *ifname)
 
          printf("Slaves mapped, state to SAFE_OP.\n");
 
-         int timestep = 100;
+         int timestep = 250;
 
          /* wait for all slaves to reach SAFE_OP state */
          ec_statecheck(0, EC_STATE_SAFE_OP,  EC_TIMEOUTSTATE * 4);
@@ -280,7 +280,7 @@ void simpletest(char *ifname)
 
             controller_init(&controller, ec_slavecount, val);
 
-            for(i = 1; i <= 100000; i++)
+            for(i = 1; i <= 1000000; i++)
             {
                /** PDO I/O refresh */
                ec_send_processdata();
@@ -459,7 +459,7 @@ void ecatcheck( void *ptr )
             if(!ec_group[currentgroup].docheckstate)
                printf(".");
         }
-        usleep(250);
+        usleep(100000);
     }
 }
 

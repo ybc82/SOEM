@@ -19,7 +19,7 @@
 
 /* Block parameters (auto storage) */
 P_Control_T Control_P = {
-  500.0,                               /* Variable: MAX_TORQUE_OUTPUT
+  2000.0,                               /* Variable: MAX_TORQUE_OUTPUT
                                         * Referenced by:
                                         *   '<S2>/Saturate'
                                         *   '<S3>/Saturate'
@@ -41,7 +41,7 @@ P_Control_T Control_P = {
                                         *   '<S2>/Integral Gain'
                                         *   '<S3>/Integral Gain'
                                         */
-  0.2,                                 /* Variable: PID_P
+  0.4,                                 /* Variable: PID_P
                                         * Referenced by:
                                         *   '<S2>/Proportional Gain'
                                         *   '<S3>/Proportional Gain'
@@ -50,7 +50,7 @@ P_Control_T Control_P = {
   /*  Expression: [10000 10000]
    * Referenced by: '<S1>/Sine Wave'
    */
-  { 10000.0, 10000.0 },
+  { 5000.0, 5000.0 },
   0.0,                                 /* Expression: 0
                                         * Referenced by: '<S1>/Sine Wave'
                                         */
